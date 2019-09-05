@@ -54,7 +54,8 @@ typedef struct flight flight_t;
  * define your own functions if required.
 *******************************************************************************/
 void print_menu (void);
-void addFlight(void);
+void addFlight(flight_t flights[], int nFlights);
+int isValidFlightCode(char code[]);
 
 /*******************************************************************************
  * Main
@@ -63,17 +64,23 @@ int main(void)
 {
     /* TODO */
     int userInput;
-
-    print_menu();
-    scanf("%d", &userInput);
-    switch (userInput)
-    {
-    case 1:
-        addFlight();
-        break;
+    flight_t flights[MAX_NUM_FLIGHTS];
+    int numOfFlights = 0;
+    while (userInput != 5) {
+        print_menu();
+        scanf("%d", &userInput);
+        switch (userInput)
+        {
+            case 1: {
+                addFlight(flights, numOfFlights);
+                numOfFlights++;
+            }
+            
+            break;
     
-    default:
-        break;
+            default:
+            break;
+        }
     }
     return 0;
 }
@@ -97,11 +104,39 @@ void print_menu (void)
     "Enter choice (number between 1-5)>\n");
 }
 
-void addFlight(void) {
-    flight_t newFlight;
+void addFlight(flight_t flights[], int nFlights) {
+    if (nFlights < MAX_NUM_FLIGHTS) {
+        flight_t newFlight;
+        int flightCodeIsValid;
+        /*, departureDtIsValid, arrivalCodeIsValid, arrivalDtIsValid;*/
+        flightCodeIsValid = 0;
+        /*departureDtIsValid = 0;
+        arrivalCodeIsValid = 0;
+        arrivalDtIsValid = 0;*/
 
-    printf("Enter flight code>\n");
-    scanf("%s", &newFlight.flightcode);
+        while (!flightCodeIsValid) {
+            printf("Enter flight code>\n");
+            scanf("%s", newFlight.flightcode);
+            flightCodeIsValid = isValidFlightCode(newFlight.flightcode);
+            if (!flightCodeIsValid) printf("Invalid input\n");
+        }
+        
 
-    if(!isValid(newFlight.flightcode)) printf("Invalid input");
+        printf("Enter departure info for the flight leaving SYD.\n");
+        printf("Enter month, date, hour and minute separated by spaces>\n");
+        scanf("%d %d %d %d", &newFlight.departure_dt.month, &newFlight.departure_dt.day, &newFlight.departure_dt.hour, &newFlight.departure_dt.minute);
+
+        printf("Enter arrival city code>\n");
+        scanf("%s", newFlight.arrival_city);
+
+        printf("Enter arrival info.\n");
+        printf("Enter month, date, hour and minute separated by spaces>\n");
+        scanf("%d %d %d %d", &newFlight.arrival_dt.month, &newFlight.arrival_dt.day, &newFlight.arrival_dt.hour, &newFlight.arrival_dt.minute);
+
+        flights[nFlights] = newFlight;
+    } else printf("Cannot add more flights - memory full\n");
+}
+
+int isValidFlightCode(char code[]) {
+    return strlen(code) < MAX_FLIGHTCODE_LEN + 1;
 }
