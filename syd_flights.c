@@ -185,4 +185,6 @@ void displayFlights(flight_t flights[], int nFlights) {
                                                                     eachFlight.arrival_dt.month, eachFlight.arrival_dt.day,
                                                                     eachFlight.arrival_dt.hour, eachFlight.arrival_dt.minute);
     }
+
+    /* if none: "No flights"
 }
