@@ -176,7 +176,7 @@ void displayFlights(flight_t flights[], int nFlights) {
     int index;
 
     printf("Enter arrival city code or enter * to show all destinations>\n");
-    for (index = 0; index < nFlights; i++) {
+    for (index = 0; index < nFlights; index++) {
         flight_t eachFlight = flights[index];
         printf("%s SYD %02d-%02d %02d:%02d %s %02d-%02d %02d:%02d", eachFlight.flightcode, 
                                                                     eachFlight.departure_dt.month, eachFlight.departure_dt.day, 
@@ -186,5 +186,5 @@ void displayFlights(flight_t flights[], int nFlights) {
                                                                     eachFlight.arrival_dt.hour, eachFlight.arrival_dt.minute);
     }
 
-    /* if none: "No flights"
+    /* if none: "No flights" */
 }
