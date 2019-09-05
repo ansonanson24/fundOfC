@@ -56,6 +56,9 @@ typedef struct flight flight_t;
 void print_menu (void);
 void addFlight(flight_t flights[], int nFlights);
 int isValidFlightCode(char code[]);
+int isValidDt(date_time_t dt);
+int isValidArrivalCode(char code[]);
+void displayFlights(flight_t flights[], int nFlights);
 
 /*******************************************************************************
  * Main
@@ -75,7 +78,8 @@ int main(void)
                 addFlight(flights, numOfFlights);
                 numOfFlights++;
             }
-            
+            break;
+            case 2: displayFlights(flights, numOfFlights);
             break;
     
             default:
@@ -107,31 +111,47 @@ void print_menu (void)
 void addFlight(flight_t flights[], int nFlights) {
     if (nFlights < MAX_NUM_FLIGHTS) {
         flight_t newFlight;
-        int flightCodeIsValid;
-        /*, departureDtIsValid, arrivalCodeIsValid, arrivalDtIsValid;*/
+        int flightCodeIsValid, departureDtIsValid, arrivalCodeIsValid, arrivalDtIsValid;
+
         flightCodeIsValid = 0;
-        /*departureDtIsValid = 0;
+        departureDtIsValid = 0;
         arrivalCodeIsValid = 0;
-        arrivalDtIsValid = 0;*/
+        arrivalDtIsValid = 0;
 
         while (!flightCodeIsValid) {
             printf("Enter flight code>\n");
             scanf("%s", newFlight.flightcode);
+
             flightCodeIsValid = isValidFlightCode(newFlight.flightcode);
             if (!flightCodeIsValid) printf("Invalid input\n");
         }
         
+        while (!departureDtIsValid) {
+            printf("Enter departure info for the flight leaving SYD.\n");
+            printf("Enter month, date, hour and minute separated by spaces>\n");
+            scanf("%d %d %d %d", &newFlight.departure_dt.month, &newFlight.departure_dt.day, &newFlight.departure_dt.hour, &newFlight.departure_dt.minute);
 
-        printf("Enter departure info for the flight leaving SYD.\n");
-        printf("Enter month, date, hour and minute separated by spaces>\n");
-        scanf("%d %d %d %d", &newFlight.departure_dt.month, &newFlight.departure_dt.day, &newFlight.departure_dt.hour, &newFlight.departure_dt.minute);
+            departureDtIsValid = isValidDt(newFlight.departure_dt);
+            if (!departureDtIsValid) printf("Invalid input\n");
+        }
 
-        printf("Enter arrival city code>\n");
-        scanf("%s", newFlight.arrival_city);
+        while (!arrivalCodeIsValid) {
+            printf("Enter arrival city code>\n");
+            scanf("%s", newFlight.arrival_city);
 
-        printf("Enter arrival info.\n");
-        printf("Enter month, date, hour and minute separated by spaces>\n");
-        scanf("%d %d %d %d", &newFlight.arrival_dt.month, &newFlight.arrival_dt.day, &newFlight.arrival_dt.hour, &newFlight.arrival_dt.minute);
+            arrivalCodeIsValid = isValidArrivalCode(newFlight.arrival_city);
+            if (!arrivalCodeIsValid) printf("Invalid input\n");
+        }
+        
+        while (!arrivalDtIsValid) {
+            printf("Enter arrival info.\n");
+            printf("Enter month, date, hour and minute separated by spaces>\n");
+            scanf("%d %d %d %d", &newFlight.arrival_dt.month, &newFlight.arrival_dt.day, &newFlight.arrival_dt.hour, &newFlight.arrival_dt.minute);
+
+            arrivalDtIsValid = isValidDt(newFlight.arrival_dt);
+            if (!arrivalDtIsValid) printf("Invalid input\n");
+        }
+        
 
         flights[nFlights] = newFlight;
     } else printf("Cannot add more flights - memory full\n");
@@ -139,4 +159,30 @@ void addFlight(flight_t flights[], int nFlights) {
 
 int isValidFlightCode(char code[]) {
     return strlen(code) < MAX_FLIGHTCODE_LEN + 1;
+}
+
+int isValidDt(date_time_t dt) {
+    return (dt.month >= 1 && dt.month <= 12 && 
+            dt.day >= 1 && dt.day <= 31 && 
+            dt.hour >= 0 && dt.hour <= 23 && 
+            dt.minute >= 0 && dt.minute <= 59);
+}
+
+int isValidArrivalCode(char code[]) {
+    return strlen(code) < MAX_CITYCODE_LEN + 1;
+}
+
+void displayFlights(flight_t flights[], int nFlights) {
+    int index;
+
+    printf("Enter arrival city code or enter * to show all destinations>\n");
+    for (index = 0; index < nFlights; i++) {
+        flight_t eachFlight = flights[index];
+        printf("%s SYD %02d-%02d %02d:%02d %s %02d-%02d %02d:%02d", eachFlight.flightcode, 
+                                                                    eachFlight.departure_dt.month, eachFlight.departure_dt.day, 
+                                                                    eachFlight.departure_dt.hour, eachFlight.departure_dt.minute, 
+                                                                    eachFlight.arrival_city,
+                                                                    eachFlight.arrival_dt.month, eachFlight.arrival_dt.day,
+                                                                    eachFlight.arrival_dt.hour, eachFlight.arrival_dt.minute);
+    }
 }
