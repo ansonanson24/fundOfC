@@ -4,10 +4,10 @@
  * Student ID: 12879779
  * Date of submission: 19 Aug 2019
  * A brief statement on what you could achieve (less than 50 words):
- * 
+ * Was able to pass test 1 - 7 & 9.
  * 
  * A brief statement on what you could NOT achieve (less than 50 words):
- * 
+ * Was not able to pass test 8, 10 & 11 even my program produces the same results.
  * 
 *******************************************************************************/
 
@@ -16,9 +16,9 @@
  * included in case you want to use any of the functions in there. However the
  * task can be achieved with stdio.h and string.h only.
 *******************************************************************************/
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <stdio.h> /* printf, scanf */
+#include <string.h> /* strlen, strcmp */
+#include <stdlib.h> /* fopen, fwrite, feof, fread, fclose */
 
 /*******************************************************************************
  * List preprocessing directives - you may define your own.
@@ -68,6 +68,8 @@ void printSpace(char code[], int length);
 void printFlightDt(date_time_t dt);
 void saveFlights(flight_t flights[], int nFlights);
 int loadFlights(flight_t flights[]);
+void printInvalidMessage(void);
+void printNoFlightsMessage(void);
 
 /*******************************************************************************
  * Main
@@ -84,8 +86,10 @@ int main(void)
         switch (userInput)
         {
             case 1: {
-                addFlight(flights, numOfFlights);
-                numOfFlights++;
+                if (numOfFlights < MAX_NUM_FLIGHTS) {
+                    addFlight(flights, numOfFlights);
+                    numOfFlights++;
+                } else printf("Cannot add more flights - memory full\n");
             }
             break;
             case 2: displayFlights(flights, numOfFlights);
@@ -96,7 +100,7 @@ int main(void)
             break;
             case 5:
             break;
-            default:
+            default: printf("Invalid choice\n");
             break;
         }
     }
@@ -122,6 +126,15 @@ void print_menu (void)
     "Enter choice (number between 1-5)>\n");
 }
 
+/*******************************************************************************
+ * This function creates a flight object with from user input and adds it to the
+ * list of flights.
+ * inputs:
+ * - flights[]: list of flights
+ * - nFlights: number of existing flights
+ * outputs:
+ * - none
+*******************************************************************************/
 void addFlight(flight_t flights[], int nFlights) {
     if (nFlights < MAX_NUM_FLIGHTS) {
         flight_t newFlight;
@@ -137,16 +150,19 @@ void addFlight(flight_t flights[], int nFlights) {
             scanf("%s", newFlight.flightcode);
 
             flightCodeIsValid = isValidFlightCode(newFlight.flightcode);
-            if (!flightCodeIsValid) printf("Invalid input\n");
+            if (!flightCodeIsValid) printInvalidMessage();
         }
         
         printf("Enter departure info for the flight leaving SYD.\n");
         while (!departureDtIsValid) {
             printf("Enter month, date, hour and minute separated by spaces>\n");
-            scanf("%d %d %d %d", &newFlight.departure_dt.month, &newFlight.departure_dt.day, &newFlight.departure_dt.hour, &newFlight.departure_dt.minute);
+            scanf("%d %d %d %d", &newFlight.departure_dt.month, 
+                                 &newFlight.departure_dt.day, 
+                                 &newFlight.departure_dt.hour, 
+                                 &newFlight.departure_dt.minute);
 
             departureDtIsValid = isValidDt(newFlight.departure_dt);
-            if (!departureDtIsValid) printf("Invalid input\n");
+            if (!departureDtIsValid) printInvalidMessage();
         }
 
         while (!arrivalCodeIsValid) {
@@ -154,23 +170,34 @@ void addFlight(flight_t flights[], int nFlights) {
             scanf("%s", newFlight.arrival_city);
 
             arrivalCodeIsValid = isValidArrivalCode(newFlight.arrival_city);
-            if (!arrivalCodeIsValid) printf("Invalid input\n");
+            if (!arrivalCodeIsValid) printInvalidMessage();
         }
         
         printf("Enter arrival info.\n");
+
         while (!arrivalDtIsValid) {
             printf("Enter month, date, hour and minute separated by spaces>\n");
-            scanf("%d %d %d %d", &newFlight.arrival_dt.month, &newFlight.arrival_dt.day, &newFlight.arrival_dt.hour, &newFlight.arrival_dt.minute);
-
+            scanf("%d %d %d %d", &newFlight.arrival_dt.month, 
+                                 &newFlight.arrival_dt.day, 
+                                 &newFlight.arrival_dt.hour, 
+                                 &newFlight.arrival_dt.minute);
             arrivalDtIsValid = isValidDt(newFlight.arrival_dt);
-            if (!arrivalDtIsValid) printf("Invalid input\n");
+            if (!arrivalDtIsValid) printInvalidMessage();
         }
         
-
         flights[nFlights] = newFlight;
-    } else printf("Cannot add more flights - memory full\n");
+    }
 }
 
+/*******************************************************************************
+ * This function checks if the flight code entered is valid according to the rules
+ * specified in the assessment outline.
+ * inputs:
+ * - code[]: flight code
+ * outputs:
+ * - 1: flight code is valid
+ * - 0: flight code is invalid
+*******************************************************************************/
 int isValidFlightCode(char code[]) {
     if (strlen(code) > MAX_FLIGHTCODE_LEN || strlen(code) < 3) return 0;
     else if (code[0] < 'A' || code[0] > 'Z') return 0;
@@ -184,6 +211,14 @@ int isValidFlightCode(char code[]) {
     return 1;
 }
 
+/*******************************************************************************
+ * This function checks if the date & time entered is within the specified range.
+ * inputs:
+ * - dt: date & time
+ * outputs:
+ * - 1: date & time is valid
+ * - 0: date & time is invalid
+*******************************************************************************/
 int isValidDt(date_time_t dt) {
     return (dt.month >= 1 && dt.month <= 12 && 
             dt.day >= 1 && dt.day <= 31 && 
@@ -191,10 +226,27 @@ int isValidDt(date_time_t dt) {
             dt.minute >= 0 && dt.minute <= 59);
 }
 
+/*******************************************************************************
+ * This function checks if the arrival city code entered follows the 
+ * specifications.
+ * inputs:
+ * - code[]: arrival city code
+ * outputs:
+ * - 1: arrival city code is valid
+ * - 0: arrival city code is invalid
+*******************************************************************************/
 int isValidArrivalCode(char code[]) {
     return strlen(code) < MAX_CITYCODE_LEN + 1;
 }
 
+/*******************************************************************************
+ * This function handles option 2 in the menu.
+ * inputs:
+ * - flights[]: list of flights
+ * - nFlights: number of existing flights
+ * outputs:
+ * - none
+*******************************************************************************/
 void displayFlights(flight_t flights[], int nFlights) {
     char input[MAX_CITYCODE_LEN + 1];
     int arrivalCodeIsValid = 0;
@@ -205,14 +257,22 @@ void displayFlights(flight_t flights[], int nFlights) {
 
         arrivalCodeIsValid = isValidArrivalCode(input);
         if (arrivalCodeIsValid) {
-            if (nFlights == 0) printf("No flights\n");
+            if (nFlights == 0) printNoFlightsMessage();
             else if (strcmp(input, "*") == 0) {
                 printAllFlights(flights, nFlights);
             } else printFlights(flights, nFlights, input);
-        } else printf("Invalid input\n");
+        } else printInvalidMessage();
     }
 }
 
+/*******************************************************************************
+ * This function prints all existing flights in the list.
+ * inputs:
+ * - flights[]: list of flights
+ * - nFlights: number of existing flights
+ * outputs:
+ * - none
+*******************************************************************************/
 void printAllFlights(flight_t flights[], int nFlights) {
     int index = 0;
     
@@ -225,6 +285,16 @@ void printAllFlights(flight_t flights[], int nFlights) {
     }
 }
 
+/*******************************************************************************
+ * This function prints all flights which destination matches the inputted
+ * arrival city code.
+ * inputs:
+ * - flights[]: list of existing flights
+ * - nFlights: number of existing flights
+ * - input[]: inputted arrival city code
+ * outputs:
+ * - none
+*******************************************************************************/
 void printFlights(flight_t flights[], int nFlights, char input[]) {
     int index, isFound;
     index = 0;
@@ -240,10 +310,17 @@ void printFlights(flight_t flights[], int nFlights, char input[]) {
                 printFlight(thisFlight);
             }
         }
-        if (!isFound) printf("No flights\n");
-    } else printf("No flights\n");
+        if (!isFound) printNoFlightsMessage();
+    } else printNoFlightsMessage();
 }
 
+/*******************************************************************************
+ * This function prints the entered flight.
+ * inputs:
+ * - flight: flight to be printed
+ * outputs:
+ * - none
+*******************************************************************************/
 void printFlight(flight_t flight) {
     printf("%s ", flight.flightcode);
     printSpace(flight.flightcode, MAX_FLIGHTCODE_LEN);
@@ -259,6 +336,15 @@ void printFlight(flight_t flight) {
     printf("\n");
 }
 
+/*******************************************************************************
+ * This function prints the remaining space needed of a flight to make the 
+ * correct alignment in the display of flights.
+ * inputs:
+ * - code[]: flight/arrival city code to be checked
+ * - length: length of the message needed
+ * outputs:
+ * - none
+*******************************************************************************/
 void printSpace(char code[], int length) {
     int spaceLength = length - strlen(code);
     int index;
@@ -267,15 +353,38 @@ void printSpace(char code[], int length) {
     }
 }
 
+/*******************************************************************************
+ * This function prints the date & time in required format.
+ * inputs:
+ * - dt: date & time
+ * outputs:
+ * - none
+*******************************************************************************/
 void printFlightDt(date_time_t dt) {
     printf("%02d-%02d %02d:%02d", dt.month, dt.day, dt.hour, dt.minute);
 }
 
+/*******************************************************************************
+ * This function prints the header in display flights.
+ * inputs:
+ * - none
+ * outputs:
+ * - none
+*******************************************************************************/
 void printHeader(void) {
     printf("Flight Origin          Destination\n");
     printf("------ --------------- ---------------\n");
 }
 
+/*******************************************************************************
+ * This function saves all existing flights to a file "database", if the file
+ * exists, the function overwrites it.
+ * inputs:
+ * - flights[]: list of flights
+ * - nFlight: number of existing flights
+ * outputs:
+ * - none
+*******************************************************************************/
 void saveFlights(flight_t flights[], int nFlights) {
     FILE *saveFile = fopen(DB_NAME, "w");
 
@@ -286,6 +395,14 @@ void saveFlights(flight_t flights[], int nFlights) {
     fclose(saveFile);
 }
 
+/*******************************************************************************
+ * This function loads previously saved flights from a "database" file in the 
+ * same directory into list of flights.
+ * inputs:
+ * - flights[]: list of flights
+ * outputs:
+ * - number of flights saved in the file
+*******************************************************************************/
 int loadFlights(flight_t flights[]) {
     FILE *loadFile = fopen(DB_NAME, "rb");
 
@@ -299,4 +416,26 @@ int loadFlights(flight_t flights[]) {
     } else printf("Read error\n");
 
     return index - 1;
+}
+
+/*******************************************************************************
+ * This function prints invalid input message.
+ * inputs:
+ * - none
+ * outputs:
+ * - none
+*******************************************************************************/
+void printInvalidMessage(void) {
+    printf("Invalid input\n");
+}
+
+/*******************************************************************************
+ * This function prints a message when no flights are found.
+ * inputs:
+ * - none
+ * outputs:
+ * - none
+*******************************************************************************/
+void printNoFlightsMessage(void) {
+    printf("No flights\n");
 }
